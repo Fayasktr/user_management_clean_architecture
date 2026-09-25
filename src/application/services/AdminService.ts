@@ -1,6 +1,6 @@
 import { User, UserStatus } from "../../domain/entities/User";
 import { FindUserFilter, IUserRepository, PaginatedUsers } from "../../domain/repositories/IUserRepository";
-
+import { publishUserEvent } from "../../infrastructure/messaging/rabbitmq";
 
 export class AdminService{
     constructor(private userRepo:IUserRepository){}
@@ -22,6 +22,10 @@ export class AdminService{
         if (!user) {
                 throw new Error('USER_NOT_FOUND');
         }
-        return await this.userRepo.updateStatus(id, status);
+        
+        let updatedUser=await this.userRepo.updateStatus(id, status);
+        publishUserEvent('USER_STATUS_UPDATED', updatedUser);
+
+        return updatedUser;
     }
 }
