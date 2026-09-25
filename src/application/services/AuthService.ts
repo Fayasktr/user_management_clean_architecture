@@ -13,7 +13,7 @@ export class AuthService{
     async register(dto:RegisterDTO):Promise<Omit<User, 'passwordHash'>>{
         const register=await this.userRepo.findByUsername(dto.userName);
         if(register){
-            throw new Error("USER_ALREAD_EXIST");   
+            throw new Error("USER_ALREAD_EXISTS");   
         }
 
         const passwordHash=await bcrypt.hash(dto.password,10);
