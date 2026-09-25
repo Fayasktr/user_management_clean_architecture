@@ -3,6 +3,7 @@ import { IUserRepository } from "../../domain/repositories/IUserRepository";
 import { Login, RegisterDTO } from "../dtos/UserDTOs";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken"
+import { publishUserEvent } from "../../infrastructure/messaging/rabbitmq";
 
 export class AuthService{
     constructor(
@@ -21,9 +22,12 @@ export class AuthService{
         const newUser=await this.userRepo.create({
             userName:dto.userName,
             passwordHash:passwordHash,
-            role:"USER",
+            role:dto.role||"USER",
             status:"ACTIVE"
         });
+        
+        publishUserEvent('USER_CREATED', newUser);
+
         const { passwordHash: _, ...safeUser } = newUser;
 
         return safeUser;
